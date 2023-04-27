@@ -1,15 +1,11 @@
 {% extends "_base.html" %}
+{% import "macros/map.html" as mapComponent %}
 {% block title %}{{ super() }} {{ data['title'] }} {% endblock %}
 {% block desc %}{{ data.get('description','') | truncate(250) }}{% endblock %}
 {% block tags %}{{ data.get('keywords',[]) | join(',') }}{% endblock %}
 {% block crumbs %}{{ super() }}
 / <a href="{{ data['collections_path'] }}">{% trans %}Collections{% endtrans %}</a>
 / <a href="./{{ data['id'] }}">{{ data['title'] | truncate( 25 ) }}</a>
-{% endblock %}
-
-{% block extrahead %}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -27,7 +23,29 @@
       </div>
       <div class="row">
         <div class="col-sm-12">
-          <div id="collection-map"></div>
+          {% set mapScriptTag %}
+            <script>
+            var map = L.map('leaflet-map').setView([{{ 0 }}, {{ 0 }}], 1);
+            map.addLayer(new L.TileLayer(
+              '{{ config['server']['map']['url'] }}', {
+                maxZoom: 18,
+                attribution: '{{ config['server']['map']['attribution'] | safe }}'
+              }
+            ));
+
+            var bbox_layer = L.polygon([
+              ['{{ data['extent']['spatial']['bbox'][0][1] }}', '{{ data['extent']['spatial']['bbox'][0][0] }}'],
+              ['{{ data['extent']['spatial']['bbox'][0][3] }}', '{{ data['extent']['spatial']['bbox'][0][0] }}'],
+              ['{{ data['extent']['spatial']['bbox'][0][3] }}', '{{ data['extent']['spatial']['bbox'][0][2] }}'],
+              ['{{ data['extent']['spatial']['bbox'][0][1] }}', '{{ data['extent']['spatial']['bbox'][0][2] }}']
+            ]);
+
+            map.addLayer(bbox_layer);
+            map.fitBounds(bbox_layer.getBounds(), {maxZoom: 10});
+            </script>
+          {% endset %}
+          {{ mapComponent.leafletMap(mapScriptTag) }}
+
         </div>
       </div>
 
@@ -107,26 +125,4 @@
      {% endif %}
 
     </section>
-{% endblock %}
-
-{% block extrafoot %}
-    <script>
-    var map = L.map('collection-map').setView([{{ 0 }}, {{ 0 }}], 1);
-    map.addLayer(new L.TileLayer(
-      '{{ config['server']['map']['url'] }}', {
-        maxZoom: 18,
-        attribution: '{{ config['server']['map']['attribution'] | safe }}'
-      }
-    ));
-
-    var bbox_layer = L.polygon([
-      ['{{ data['extent']['spatial']['bbox'][0][1] }}', '{{ data['extent']['spatial']['bbox'][0][0] }}'],
-      ['{{ data['extent']['spatial']['bbox'][0][3] }}', '{{ data['extent']['spatial']['bbox'][0][0] }}'],
-      ['{{ data['extent']['spatial']['bbox'][0][3] }}', '{{ data['extent']['spatial']['bbox'][0][2] }}'],
-      ['{{ data['extent']['spatial']['bbox'][0][1] }}', '{{ data['extent']['spatial']['bbox'][0][2] }}']
-    ]);
-
-    map.addLayer(bbox_layer);
-    map.fitBounds(bbox_layer.getBounds(), {maxZoom: 10});
-    </script>
 {% endblock %}

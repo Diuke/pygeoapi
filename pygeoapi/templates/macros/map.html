@@ -1,0 +1,29 @@
+{# Centralized Map Component #}
+{% macro leafletMap(mapScriptContent, options=[]) -%}
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    {% if options %}
+        {% if "MarkerCluster" in options %}
+            <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+            <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+            <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
+        {% endif %}
+
+        {% if "coverage" in options %}
+            <link rel="stylesheet" type="text/css" href="https://unpkg.com/leaflet-coverage@0.7/leaflet-coverage.css">
+            <script src="https://unpkg.com/covutils@0.6/covutils.min.js"></script>
+            <script src="https://unpkg.com/covjson-reader@0.16/covjson-reader.src.js"></script>
+            <script src="https://unpkg.com/leaflet-coverage@0.7/leaflet-coverage.min.js"></script>
+        {% endif %}
+
+        {% if "VectorGrid" in options %}
+        <script src="https://unpkg.com/leaflet.vectorgrid@latest/dist/Leaflet.VectorGrid.bundled.js"></script>
+        {% endif %}
+    {% endif %}
+
+    <div id="leaflet-map"></div>
+
+    {{ mapScriptContent | safe }}
+
+{% endmacro %}

@@ -22,7 +22,8 @@ main {
 /*    text-transform: capitalize;*/
 }
 
-#items-map, #collection-map {
+/* Styles for the web map */
+#leaflet-map {
     width: 100%;
     height: 400px;
 }

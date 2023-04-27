@@ -1,15 +1,11 @@
 {% extends "_base.html" %}
+{% import "macros/map.html" as mapComponent %}
 {% block title %}{{ super() }} stac/{{ data['path'] }} {% endblock %}
 {% block crumbs %}{{ super() }}
 / <a href="{{ config['server']['url'] }}/stac">{% trans %}SpatioTemporal Asset Catalog{% endtrans %}</a>
 {% for link in get_breadcrumbs(data['path']) %}
 / <a class="crumbs-path" href="{{config['server']['url'] }}/stac/{{ link['href'] }}">{{ link['title'] }}</a>
 {% endfor %}
-{% endblock %}
-
-{% block extrahead %}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -23,7 +19,27 @@
         <div class="col-md-6 col-sm-12">
           <div class="row">
             <div class="col-sm-12">
-              <div id="items-map"></div>
+              {% set mapScriptTag %}
+                  <script>
+                  var map = L.map('leaflet-map').setView([{{ 0 }}, {{ 0 }}], 1);
+                  map.addLayer(new L.TileLayer(
+                      '{{ config['server']['map']['url'] }}', {
+                          maxZoom: 18,
+                          attribution: '{{ config['server']['map']['attribution'] | safe }}'
+                      }
+                  ));
+                  var bbox_layer = L.polygon([
+                      [{{ data['bbox'][1] }}, {{ data['bbox'][0] }}],
+                      [{{ data['bbox'][3] }}, {{ data['bbox'][0] }}],
+                      [{{ data['bbox'][3] }}, {{ data['bbox'][2] }}],
+                      [{{ data['bbox'][1] }}, {{ data['bbox'][2] }}],
+                  ]);
+                  map.addLayer(bbox_layer);
+                  map.fitBounds(bbox_layer.getBounds(), {maxZoom: 10});
+                  </script>
+              {% endset %}
+              {{ mapComponent.leafletMap(mapScriptTag) }}
+
               <div id="assets">
                 <h4>{% trans %}Assets{% endtrans %}</h4>
                 <table class="table table-striped table-bordered">
@@ -85,25 +101,4 @@
         </div>
       </div>
     </section>
-{% endblock %}
-
-{% block extrafoot %}
-    <script>
-    //var map = L.map('items-map').setView([{{ 45 }}, {{ -75 }}], 2);
-    var map = L.map('items-map').setView([{{ 0 }}, {{ 0 }}], 1);
-    map.addLayer(new L.TileLayer(
-        '{{ config['server']['map']['url'] }}', {
-            maxZoom: 18,
-            attribution: '{{ config['server']['map']['attribution'] | safe }}'
-        }
-    ));
-    var bbox_layer = L.polygon([
-        [{{ data['bbox'][1] }}, {{ data['bbox'][0] }}],
-        [{{ data['bbox'][3] }}, {{ data['bbox'][0] }}],
-        [{{ data['bbox'][3] }}, {{ data['bbox'][2] }}],
-        [{{ data['bbox'][1] }}, {{ data['bbox'][2] }}],
-    ]);
-    map.addLayer(bbox_layer);
-    map.fitBounds(bbox_layer.getBounds(), {maxZoom: 10});
-    </script>
 {% endblock %}
